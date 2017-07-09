@@ -2,6 +2,9 @@ from machinepredict.interface import train
 
 train_file = "mnist/train.npz"
 test_file = "mnist/test.npz"
+nb_train = 55000
+nb_valid = 5000
+nb_classes = 10
 
 params = {
     'input_col': 'X',
@@ -15,32 +18,31 @@ params = {
             "batch_norm": False,
             "fc": [512, 256, 128],
             "size_filters": 3,
-            "activation": "prelu"
+            "activation": "prelu",
+            "output_activation": "softmax"
          }
     },
     'data': {
         'train': {
             'pipeline':[
-                {"name": "load_numpy", "params": {"filename": train_file, "start": 0, "nb": 55000, "cols": ["X", "y"]}},
-                {"name": "divide_by", "params": {"value": 255}},
-                {"name": "onehot", "params": {"nb_classes": 10}}
+                {"name": "load_numpy", "params": {"filename": train_file, "start": 0, "nb": nb_train, "cols": ["X", "y"]}},
+                {"name": "onehot", "params": {"nb_classes": nb_classes}}
             ]
         },
         'valid': {
             'pipeline':[
-                {"name": "load_numpy", "params": {"filename": train_file, "start": 55000, "nb": 5000, "cols": ["X", "y"]}},
-                {"name": "divide_by", "params": {"value": 255}},
-                {"name": "onehot", "params": {"nb_classes": 10}}
+                {"name": "load_numpy", "params": {"filename": train_file, "start": nb_train, "nb": nb_valid, "cols": ["X", "y"]}},
+                {"name": "onehot", "params": {"nb_classes": nb_classes}}
             ]
         },
         'test': {
             'pipeline':[
                 {"name": "load_numpy", "params": {"filename": test_file, "cols": ["X", "y"]}},
-                {"name": "divide_by", "params": {"value": 255}},
-                {"name": "onehot", "params": {"nb_classes": 10}}
+                {"name": "onehot", "params": {"nb_classes": nb_classes}}
             ]
         },
         'transformers':[
+            {"name": "Scaler", "params": {"value": 255.}}
         ]
     },
     'report':{
@@ -58,8 +60,12 @@ params = {
             'params': {'lr': 1e-3}
         },
         'lr_schedule':{
-            'name': 'constant',
-            'params': {}
+            'name': 'decrease_when_stop_improving',
+            'params': {
+                'patience': 5,
+                'loss': 'valid_accuracy',
+                'shrink_factor': 10.,
+            }
         },
         'early_stopping':{
             'name': 'none',
@@ -75,4 +81,5 @@ params = {
     },
 }
 
-train(params)
+if __name__ == '__main__':
+    train(params)

@@ -1,3 +1,6 @@
+import os
+import pickle
+
 from keras.models import load_model
 
 from machinedesign.interface import  train as _train
@@ -16,7 +19,6 @@ config.metrics['accuracy'] = accuracy
 
 def train(params):
     return _train(params, config=config)
-
 
 def load(folder):
     model = load_model(os.path.join(folder, 'model.h5'))
