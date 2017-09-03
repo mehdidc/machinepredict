@@ -4,7 +4,7 @@ from machinepredict.interface import train
 params['model'] = {
     'name': 'densenet',
     'params':{
-        'depth': 30,
+        'depth': 34,
         'nb_dense_block': 3,
         'growth_rate': 12,
         'nb_filter': 16,
